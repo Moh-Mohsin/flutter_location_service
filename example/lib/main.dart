@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await BackgroundLocationService.platformVersion;
+      platformVersion = await BackgroundLocationService.startLocationService;
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -37,9 +37,9 @@ class _MyAppState extends State<MyApp> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
-    setState(() {
+   /* setState(() {
       _platformVersion = platformVersion;
-    });
+    });*/
   }
 
   @override
@@ -50,7 +50,9 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: InkWell(child: Text('Running on: $_platformVersion\n'),onTap: () async {
+             await BackgroundLocationService.stopLocationService;
+          },),
         ),
       ),
     );

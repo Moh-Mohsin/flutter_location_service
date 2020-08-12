@@ -45,6 +45,7 @@ class LocationLiveData(context: Context) : LiveData<LocationData>() {
 
     override fun onActive() {
         super.onActive()
+
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 location?.also {
