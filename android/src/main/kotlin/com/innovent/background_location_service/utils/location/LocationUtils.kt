@@ -1,4 +1,4 @@
-package com.almissbah.weather.utils.location
+package com.innovent.background_location_service.utils.location
 
 import android.Manifest
 import android.content.Context

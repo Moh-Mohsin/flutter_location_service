@@ -77,7 +77,10 @@ class MyLocationService : Service() {
     }
 
     private fun updateLocation(location: Location) {
-        Log.d("MyLocationService", " location is ${location.latitude} ${location.longitude}")
+        val msg="location is ${location.latitude} ${location.longitude}"
+        Log.d("MyLocationService", msg)
+        ChannelHolder.brodcast(msg)
+
     }
 
     private fun createNotificationChannel() {
