@@ -1,13 +1,10 @@
 package com.innovent.background_location_service
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.annotation.NonNull
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -16,7 +13,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** BackgroundLocationServicePlugin */
-public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.StreamHandler, MethodCallHandler, ActivityAware {
+public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.StreamHandler, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -24,7 +21,6 @@ public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.Stream
     private lateinit var channel: MethodChannel
     private lateinit var eventChannel: EventChannel
     private lateinit var context: Context
-    private lateinit var activity: Activity
     var count = 0;
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -80,16 +76,5 @@ public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.Stream
     }
 
 
-    override fun onDetachedFromActivity() {
-    }
 
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    }
-
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        activity = binding.activity;
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-    }
 }
