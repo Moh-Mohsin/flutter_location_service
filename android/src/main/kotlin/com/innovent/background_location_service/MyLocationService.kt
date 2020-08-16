@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
+import com.innovent.background_location_service.ChannelHolder
 import com.innovent.background_location_service.utils.location.LOCATION_REQUEST_FAST_INTERVAL
 import com.innovent.background_location_service.utils.location.LOCATION_REQUEST_INTERVAL
 

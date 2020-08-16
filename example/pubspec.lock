@@ -25,9 +25,11 @@ packages:
   background_location_service:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "2d95cf89a00dd79dc6a4ea0fbe673ca7ca584bf1"
+      url: "https://github.com/Almissbah/flutter_location_service.git"
+    source: git
     version: "0.0.1"
   boolean_selector:
     dependency: transitive
