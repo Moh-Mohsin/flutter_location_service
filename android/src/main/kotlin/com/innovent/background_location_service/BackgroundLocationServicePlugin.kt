@@ -2,8 +2,8 @@ package com.innovent.background_location_service
 
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.NonNull
 import android.util.Log
+import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -13,21 +13,24 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** BackgroundLocationServicePlugin */
-public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.StreamHandler, MethodCallHandler {
+public class BackgroundLocationServicePlugin constructor() : FlutterPlugin, EventChannel.StreamHandler, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
     private lateinit var eventChannel: EventChannel
-    private lateinit var context: Context
-    var count = 0;
+    private var mContext: Context? = null
+
+    constructor(context: Context) : this() {
+        mContext = context
+    }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        context= flutterPluginBinding.applicationContext
+        if (mContext == null) mContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "background_location_service")
         channel.setMethodCallHandler(this);
-        eventChannel = EventChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(),  "background_location_service2")
+        eventChannel = EventChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "background_location_service2")
         eventChannel.setStreamHandler(this)
 
     }
@@ -45,10 +48,10 @@ public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.Stream
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "background_location_service")
-            channel.setMethodCallHandler(BackgroundLocationServicePlugin())
+            channel.setMethodCallHandler(BackgroundLocationServicePlugin(registrar.context()))
 
-            val eventChannel = EventChannel(registrar.messenger(),   "background_location_service2")
-            eventChannel.setStreamHandler(BackgroundLocationServicePlugin())
+            val eventChannel = EventChannel(registrar.messenger(), "background_location_service2")
+            eventChannel.setStreamHandler(BackgroundLocationServicePlugin(registrar.context()))
         }
     }
 
@@ -62,9 +65,9 @@ public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.Stream
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         if (call.method == "startLocationService") {
-            context.startService(Intent(context, MyLocationService::class.java))
+            mContext?.startService(Intent(mContext, MyLocationService::class.java))
         } else if (call.method == "stopLocationService") {
-            context.stopService(Intent(context, MyLocationService::class.java))
+            mContext?.stopService(Intent(mContext, MyLocationService::class.java))
         } else {
             result.notImplemented()
         }
@@ -74,7 +77,6 @@ public class BackgroundLocationServicePlugin : FlutterPlugin,EventChannel.Stream
         channel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
     }
-
 
 
 }
