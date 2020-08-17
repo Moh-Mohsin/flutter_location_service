@@ -66,9 +66,9 @@ class MyLocationService : Service() {
         val pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0)
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Woit")
-                .setContentText("")
-                .setSmallIcon(R.mipmap.sym_def_app_icon)
+                .setContentTitle("Supervisor")
+                .setContentText("service is running.")
+                .setSmallIcon(R.drawable.ic_dialog_info)
                 .setContentIntent(pendingIntent)
                 .build()
         startForeground(1, notification)
