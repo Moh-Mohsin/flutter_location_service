@@ -2,10 +2,8 @@ package com.innovent.background_location_service
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -13,13 +11,12 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 /** BackgroundLocationServicePlugin */
-public class BackgroundLocationServicePlugin constructor() : FlutterPlugin, EventChannel.StreamHandler, MethodCallHandler {
+public class BackgroundLocationServicePlugin constructor() : FlutterPlugin, MethodCallHandler {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
-    private lateinit var eventChannel: EventChannel
     private var mContext: Context? = null
 
     constructor(context: Context) : this() {
@@ -28,11 +25,8 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin, Even
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         if (mContext == null) mContext = flutterPluginBinding.applicationContext
-        channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "background_location_service")
-        channel.setMethodCallHandler(this);
-        eventChannel = EventChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "background_location_service2")
-        eventChannel.setStreamHandler(this)
-
+        channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "com.innovent/background_location_service")
+        channel.setMethodCallHandler(this)
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -47,35 +41,56 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin, Even
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "background_location_service")
+            val channel = MethodChannel(registrar.messenger(), "com.innovent/background_location_service")
             channel.setMethodCallHandler(BackgroundLocationServicePlugin(registrar.context()))
-
-            val eventChannel = EventChannel(registrar.messenger(), "background_location_service2")
-            eventChannel.setStreamHandler(BackgroundLocationServicePlugin(registrar.context()))
         }
     }
 
-    override fun onListen(p0: Any?, p1: EventChannel.EventSink) {
-        Log.d("MyLocationService", "add new listener 2")
-        ChannelHolder.add(p1)
-    }
-
-    override fun onCancel(p0: Any) {
-    }
-
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+        val args = call.arguments<ArrayList<*>?>()
+
+
         if (call.method == "startLocationService") {
-            mContext?.startService(Intent(mContext, MyLocationService::class.java))
+            val callbackDispatcher = args!![0] as Long
+            val priority = args[1] as Int
+            val fastestIntervalMs = args[2] as Int
+            val locationIntervalMs = args[3] as Int
+            val minChangeDistanceInMeters = args[4] as Int
+            val notificationTitle = args[5] as String
+            val notificationContent = args[6] as String
+            val intent = Intent(mContext, MyLocationService::class.java)
+            intent.putExtra("callbackDispatcher", callbackDispatcher)
+            intent.putExtra("priority", priority)
+            intent.putExtra("fastestIntervalMs", fastestIntervalMs)
+            intent.putExtra("locationIntervalMs", locationIntervalMs)
+            intent.putExtra("minChangeDistanceInMeters", minChangeDistanceInMeters)
+            intent.putExtra("notificationTitle", notificationTitle)
+            intent.putExtra("notificationContent", notificationContent)
+            //  intent.putExtra("callback", callback)
+            mContext?.startService(intent)
+            result.success("true")
+
         } else if (call.method == "stopLocationService") {
             mContext?.stopService(Intent(mContext, MyLocationService::class.java))
+            result.success(true)
+        } else if (call.method == "addTopLevelCallback") {
+            val callback = args!![0] as Long
+            CallbackHolder.addCallback(callback)
+            result.success("true")
+        } else if (call.method == "getLocation") {
+            val args = arrayListOf<Any>()
+            args.add(CallbackHolder.location?.latitude ?: 0.0)
+            args.add(CallbackHolder.location?.longitude ?: 0.0)
+            result.success(args)
         } else {
+
+
             result.notImplemented()
         }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
-        eventChannel.setStreamHandler(null)
     }
 
 

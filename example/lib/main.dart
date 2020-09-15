@@ -1,8 +1,22 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:background_location_service/background_location_service.dart';
+import 'package:background_location_service/location.dart';
+import 'package:background_location_service/location_settings.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+void handler(Location location) {
+  //location.add("value");
+  print("LocationFromDart");
+  print("data is ${location.lng} ${location.lat}");
+}
+
+void handler2(Location location) {
+  //location.add("value");
+  print("LocationFromDart2");
+  print("data2 is ${location.lng} ${location.lat}");
+}
 
 void main() {
   runApp(MyApp());
@@ -25,15 +39,19 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     try {
-        await BackgroundLocationService.startLocationService;
-    } on PlatformException {
+      await BackgroundLocationService.startService(LocationSettings());
 
+      await BackgroundLocationService.addTopLevelCallback(handler);
+      await BackgroundLocationService.addTopLevelCallback(handler2);
+      var location = await BackgroundLocationService.getLatestLocation();
+      print("data3 is ${location.lng} ${location.lat}");
+    } on PlatformException {
       print("Eroorrrr");
     }
 
     if (!mounted) return;
 
-   /* setState(() {
+    /* setState(() {
       _platformVersion = platformVersion;
     });*/
   }
@@ -46,9 +64,12 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: InkWell(child: Text('Running on: $_platformVersion\n'),onTap: () async {
-             await BackgroundLocationService.stopLocationService;
-          },),
+          child: InkWell(
+            child: Text('Running on: $_platformVersion\n'),
+            onTap: () async {
+              await BackgroundLocationService.stopLocationService;
+            },
+          ),
         ),
       ),
     );

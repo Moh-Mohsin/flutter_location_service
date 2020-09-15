@@ -1,37 +1,47 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:background_location_service/location.dart';
+import 'package:background_location_service/location_settings.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import 'callback_dispatcher.dart';
 
 class BackgroundLocationService {
   static const MethodChannel _channel =
-      const MethodChannel('background_location_service');
+      const MethodChannel('com.innovent/background_location_service');
 
-  static Future<String> get startLocationService async {
-    final String data = await _channel.invokeMethod('startLocationService');
+  static Future<bool> get stopLocationService async {
+    final bool data = await _channel.invokeMethod('stopLocationService');
     return data;
   }
 
-
-  static Future<String> get stopLocationService async {
-    final String data = await _channel.invokeMethod('stopLocationService');
-    return data;
+  static Future<bool> startService(LocationSettings settings) async {
+    final args = <dynamic>[
+      PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle(),
+    ];
+    args.addAll(settings.getArgs());
+    var result = await _channel.invokeMethod('startLocationService', args);
+    return true;
   }
 
-  static Future<String> get getLocationStream  async {
+  static Future<bool> addTopLevelCallback(
+      void Function(Location location) callback) async {
+    final args = <dynamic>[
+      PluginUtilities.getCallbackHandle(callback).toRawHandle()
+    ];
 
-    print("Calling the plugin getLocationStream");
-    const EventChannel _stream = EventChannel('background_location_service2');
-     _stream.receiveBroadcastStream().listen(_speechResultsHandler, onError: _speechResultErrorHandler);
+    var result =  await _channel.invokeMethod('addTopLevelCallback', args);
+    return true;
   }
 
-  static _speechResultsHandler(dynamic event) {
-    final String normalizedEvent = event.toLowerCase();
-    print("Received error: ${normalizedEvent}");
+  static Future<Location> getLatestLocation() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    var result = await _channel.invokeMethod("getLocation");
+    var lat = result[0] as double;
+    var lng = result[1] as double;
+
+    return Location(lat, lng);
   }
-
-  static  _speechResultErrorHandler(dynamic error) => print('Received error: ${error.message}');
-
-
-
-  static void setMethodCallHandler(){}
 }
