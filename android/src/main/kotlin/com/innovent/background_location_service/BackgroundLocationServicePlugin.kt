@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -94,6 +95,13 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         args.add(CallbackHolder.location?.accuracy ?: 0.0)
         args.add(CallbackHolder.location?.bearing ?: 0.0)
         args.add(CallbackHolder.location?.speed ?: 0.0)
+        args.add(CallbackHolder.location?.time?: 0)
+        args.add(CallbackHolder.location?.altitude?: 0.0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond?: 0.0)
+        }else{
+            args.add(0)
+        }
         result.success(args)
     }
 

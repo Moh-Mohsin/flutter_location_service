@@ -133,6 +133,13 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         args.add(location.accuracy)
         args.add(location.bearing)
         args.add(location.speed)
+        args.add(location.time)
+        args.add(location.altitude)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            args.add(location.speedAccuracyMetersPerSecond)
+        }else{
+            args.add(0)
+        }
 
         mBackgroundChannel.invokeMethod("updateLocation", args)
     }

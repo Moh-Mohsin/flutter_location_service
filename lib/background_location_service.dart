@@ -39,8 +39,11 @@ class BackgroundLocationService {
     var accuracy = result[2] as double;
     var bearing = result[3] as double;
     var speed = result[4] as double;
+    var time = result[5] as int;
+    var altitude = result[6] as double;
+    var speedAccuracy = result[7] as double;
 
-    return Location(lat, lng, accuracy, bearing, speed);
+    return Location(lat, lng, accuracy, bearing, speed,time,altitude,speedAccuracy);
   }
 
   static Future<bool> get stopLocationService async {

@@ -23,8 +23,13 @@ void callbackDispatcher() {
     var accuracy = args[3] as double;
     var bearing = args[4] as double;
     var speed = args[5] as double;
+    var time = args[6] as int;
+    var altitude = args[7] as double;
+    var speedAccuracy = args[8] as double;
 
-    callback(Location(lat, lng, accuracy, bearing, speed));
-    print("callbackDispatcher lat:$lat lng:$lng accuracy:$accuracy bearing:$bearing speed:$speed");
+    callback(Location(
+        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy));
+    print(
+        "background_location_service callbackDispatcher lat:$lat lng:$lng accuracy:$accuracy bearing:$bearing speed:$speed time:$time altitude:$altitude speedAccuracy:$speedAccuracy");
   });
 }
