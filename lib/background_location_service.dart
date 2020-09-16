@@ -17,6 +17,7 @@ class BackgroundLocationService {
       PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle(),
     ];
     args.addAll(settings.getArgs());
+    print("BackgroundLocationService starting the service ..");
     var result = await _channel.invokeMethod('startLocationService', args);
     return result;
   }
@@ -48,6 +49,7 @@ class BackgroundLocationService {
 
   static Future<bool> get stopLocationService async {
     final bool data = await _channel.invokeMethod('stopLocationService');
+    print("BackgroundLocationService stopping the service ..");
     return data;
   }
 }

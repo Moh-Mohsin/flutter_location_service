@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -62,21 +63,26 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
             registrar.addRequestPermissionsResultListener(plugin)
             channel.setMethodCallHandler(plugin)
         }
+        const val TAG="BLServicePlugin"
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             "startLocationService" -> {
                 handleStartServiceMethod(call, result)
+                Log.i(TAG,"Staring the service .")
             }
             "stopLocationService" -> {
                 handleStopServiceMethod(call, result)
+                Log.i(TAG,"Stoping the service .")
             }
             "addTopLevelCallback" -> {
                 handleAddTopLevelCallbackMethod(call, result)
+                Log.i(TAG,"adding a callback .")
             }
             "getLocation" -> {
                 handleGetLocationMethod(call, result)
+                Log.i(TAG,"Removing a callback.")
             }
             else -> {
                 result.notImplemented()
