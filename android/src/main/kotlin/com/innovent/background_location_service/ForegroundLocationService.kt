@@ -2,10 +2,7 @@ package com.innovent.background_location_service
 
 import android.R
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.location.Location
@@ -14,6 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
+import com.innovent.background_location_service.utils.location.PluginUtils
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodCall
@@ -23,11 +21,18 @@ import io.flutter.view.FlutterMain
 import java.util.*
 
 
-class MyLocationService : Service(), MethodChannel.MethodCallHandler {
+class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mBackgroundChannel: MethodChannel
     private lateinit var mContext: Context
     private lateinit var mLocation: Location
+
+    private var callbackDispatcherId: Long = 0
+    private var mInterval: Int = 0
+    private var mSmallestDisplacement: Int = 0
+    private var mFastestInterval: Int = 0
+    private var mPriority: Int = 0
+
     val CHANNEL_ID = "ForegroundServiceChannel"
 
     private val locationCallback = object : LocationCallback() {
@@ -39,7 +44,7 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
         }
     }
 
-    var mLocationRequest: LocationRequest?=null
+    var mLocationRequest: LocationRequest? = null
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
@@ -53,6 +58,7 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
                 locationCallback,
                 null
         )
+
     }
 
     override fun onCreate() {
@@ -72,42 +78,41 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
-        val notificationIntent = Intent(this, MyLocationService::class.java)
+        val notification = buildNotification(intent)
+        startForeground(1, notification)
+        initVariables(intent)
+        //do heavy work on a background thread
+        //stopSelf();
+        startLocationService(this, callbackDispatcherId)
+
+        return START_NOT_STICKY
+    }
+
+    private fun initVariables(intent: Intent) {
+
+        callbackDispatcherId = intent.getLongExtra(CALLBACK_DISPATCHER, 0)
+        mPriority = intent.getIntExtra(PRIORITY, LocationRequest.PRIORITY_HIGH_ACCURACY)
+        mFastestInterval = intent.getIntExtra(FASTEST_INTERVAL_IN_MS, 0)
+        mInterval = intent.getIntExtra(LOCATION_INTERVAL_IN_MS, 0)
+        mSmallestDisplacement = intent.getIntExtra(MIN_CHANGE_DISTANCE_IN_METER, 0)
+        // callbackId = intent.getLongExtra("callback", 0)
+    }
+
+    private fun buildNotification(intent: Intent): Notification? {
+        val notificationIntent = Intent(this, ForegroundLocationService::class.java)
         val pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0)
 
-        val title = intent.getStringExtra("notificationTitle")
-        val content = intent.getStringExtra("notificationContent")
+        val title = intent.getStringExtra(NOTIFICATION_TITLE)
+        val content = intent.getStringExtra(NOTIFICATION_CONTENT)
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(content)
                 .setSmallIcon(R.drawable.ic_dialog_info)
                 .setContentIntent(pendingIntent)
                 .build()
-        startForeground(1, notification)
-
-        callbackDispatcherId = intent.getLongExtra("callbackDispatcher", 0)
-        mPriority = intent.getIntExtra("priority", LocationRequest.PRIORITY_HIGH_ACCURACY)
-        mFastestInterval = intent.getIntExtra("fastestIntervalMs", 0)
-        mInterval = intent.getIntExtra("locationIntervalMs", 0)
-        mSmallestDisplacement = intent.getIntExtra("minChangeDistanceInMeters", 0)
-        // callbackId = intent.getLongExtra("callback", 0)
-
-        //do heavy work on a background thread
-        //stopSelf();
-        // invokeCallback()
-        startLocationService(this, callbackDispatcherId)
-
-        return START_NOT_STICKY
+        return notification;
     }
-
-    private var callbackDispatcherId: Long = 0
-    private var callbackId: Long = 0
-
-    private var mInterval: Int = 0
-    private var mSmallestDisplacement: Int = 0
-    private var mFastestInterval: Int = 0
-    private var mPriority: Int = 0
 
 
     private fun updateLocation(location: Location) {
@@ -115,25 +120,32 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
         mLocation = location
         CallbackHolder.location = location
         Log.d(TAG, msg)
-        CallbackHolder.callbackList.forEach { it ->
+        CallbackHolder.callbackList.forEach {
             invokeCallback(location, it)
         }
-        // invokeCallback(location,callbackId)
-        //    ChannelHolder.brodcast(msg)
     }
 
-    fun invokeCallback(location: Location, callbackId: Long) {
-        val l = ArrayList<Any>()
-        l.add(callbackId)
-        l.add(location.latitude)
-        l.add(location.longitude)
-        mBackgroundChannel.invokeMethod("updateLocation", l)
+    private fun invokeCallback(location: Location, callbackId: Long) {
+        val args = ArrayList<Any>()
+        args.add(callbackId)
+        args.add(location.latitude)
+        args.add(location.longitude)
+        args.add(location.accuracy)
+        args.add(location.bearing)
+        args.add(location.speed)
+
+        mBackgroundChannel.invokeMethod("updateLocation", args)
     }
 
 
     private fun startLocationService(context: Context, callbackHandle: Long) {
-
         mContext = context
+        CallbackHolder.isServiceRunning = true
+
+        if (!PluginUtils.isLocationEnabled(context)) {
+            PluginUtils.launchLocationSettings(context)
+            PluginUtils.showToast(context, "Please turn ON your GPS.")
+        }
 
         if (sBackgroundFlutterEngine == null) {
             if (callbackHandle == 0L) {
@@ -177,6 +189,8 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
     }
 
     override fun onDestroy() {
+        CallbackHolder.isServiceRunning = false
+        CallbackHolder.dispose()
         fusedLocationClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
     }
@@ -186,17 +200,22 @@ class MyLocationService : Service(), MethodChannel.MethodCallHandler {
     }
 
     companion object {
-        val TAG = "MyLocationService"
+        val TAG = "FLocationService"
 
         @JvmStatic
         private var sBackgroundFlutterEngine: FlutterEngine? = null
+        const val CALLBACK_DISPATCHER = "callbackDispatcher"
+        const val PRIORITY = "priority"
+        const val FASTEST_INTERVAL_IN_MS = "fastestIntervalMs"
+        const val LOCATION_INTERVAL_IN_MS = "locationIntervalMs"
+        const val MIN_CHANGE_DISTANCE_IN_METER = "minChangeDistanceInMeters"
+        const val NOTIFICATION_TITLE = "notificationTitle"
+        const val NOTIFICATION_CONTENT = "notificationContent"
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
         if (call.method == "getLocation") {
-
-
             result.success("")
         }
     }

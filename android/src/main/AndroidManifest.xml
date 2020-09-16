@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <application>
         <service
-            android:name=".MyLocationService"
+            android:name=".ForegroundLocationService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

@@ -8,7 +8,8 @@ class LocationSettings {
       {this.locationIntervalMs = 1000 * 30,
       this.fastestIntervalMs = 100,
       this.minChangeDistanceInMeters = 0,
-      this.priority = PRIORITY_HIGH_ACCURACY,
+      this.priority = LocationSettings.PRIORITY_HIGH_ACCURACY,
+      this.enableToastNotifications = true,
       this.notificationTitle = "Supervisor",
       this.notificationContent = "Service is running.."});
 
@@ -18,6 +19,7 @@ class LocationSettings {
   int priority;
   String notificationTitle;
   String notificationContent;
+  bool enableToastNotifications;
 
   List<dynamic> getArgs() {
     return <dynamic>[
@@ -26,7 +28,8 @@ class LocationSettings {
       locationIntervalMs,
       minChangeDistanceInMeters,
       notificationTitle,
-      notificationContent
+      notificationContent,
+      enableToastNotifications
     ];
   }
 }

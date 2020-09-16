@@ -12,18 +12,13 @@ class BackgroundLocationService {
   static const MethodChannel _channel =
       const MethodChannel('com.innovent/background_location_service');
 
-  static Future<bool> get stopLocationService async {
-    final bool data = await _channel.invokeMethod('stopLocationService');
-    return data;
-  }
-
   static Future<bool> startService(LocationSettings settings) async {
     final args = <dynamic>[
       PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle(),
     ];
     args.addAll(settings.getArgs());
     var result = await _channel.invokeMethod('startLocationService', args);
-    return true;
+    return result;
   }
 
   static Future<bool> addTopLevelCallback(
@@ -32,8 +27,8 @@ class BackgroundLocationService {
       PluginUtilities.getCallbackHandle(callback).toRawHandle()
     ];
 
-    var result =  await _channel.invokeMethod('addTopLevelCallback', args);
-    return true;
+    var result = await _channel.invokeMethod('addTopLevelCallback', args);
+    return result;
   }
 
   static Future<Location> getLatestLocation() async {
@@ -41,7 +36,15 @@ class BackgroundLocationService {
     var result = await _channel.invokeMethod("getLocation");
     var lat = result[0] as double;
     var lng = result[1] as double;
+    var accuracy = result[2] as double;
+    var bearing = result[3] as double;
+    var speed = result[4] as double;
 
-    return Location(lat, lng);
+    return Location(lat, lng, accuracy, bearing, speed);
+  }
+
+  static Future<bool> get stopLocationService async {
+    final bool data = await _channel.invokeMethod('stopLocationService');
+    return data;
   }
 }

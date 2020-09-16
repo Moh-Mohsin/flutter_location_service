@@ -1,21 +1,16 @@
-import 'dart:async';
-
 import 'package:background_location_service/background_location_service.dart';
 import 'package:background_location_service/location.dart';
 import 'package:background_location_service/location_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-void handler(Location location) {
-  //location.add("value");
-  print("LocationFromDart");
-  print("data is ${location.lng} ${location.lat}");
+void firstTopLevelCallback(Location location) {
+  print(
+      "firstTopLevelCallback data is lat: ${location.lat} lng:${location.lat}");
 }
 
-void handler2(Location location) {
-  //location.add("value");
-  print("LocationFromDart2");
-  print("data2 is ${location.lng} ${location.lat}");
+void secondTopLevelCallback(Location location) {
+  print(
+      "secondTopLevelCallback data is lat: ${location.lat} lng:${location.lat}");
 }
 
 void main() {
@@ -28,32 +23,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
+  String _currentLocationText="No location";
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    try {
-      await BackgroundLocationService.startService(LocationSettings());
-
-      await BackgroundLocationService.addTopLevelCallback(handler);
-      await BackgroundLocationService.addTopLevelCallback(handler2);
-      var location = await BackgroundLocationService.getLatestLocation();
-      print("data3 is ${location.lng} ${location.lat}");
-    } on PlatformException {
-      print("Eroorrrr");
-    }
-
-    if (!mounted) return;
-
-    /* setState(() {
-      _platformVersion = platformVersion;
-    });*/
   }
 
   @override
@@ -61,14 +34,60 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Android foreground service'),
         ),
         body: Center(
-          child: InkWell(
-            child: Text('Running on: $_platformVersion\n'),
-            onTap: () async {
-              await BackgroundLocationService.stopLocationService;
-            },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('Start Service'),
+                  onPressed: () async {
+                    await BackgroundLocationService.startService(
+                        LocationSettings());
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('Register Callbacks'),
+                  onPressed: () async {
+                    await BackgroundLocationService.addTopLevelCallback(
+                        firstTopLevelCallback);
+                    await BackgroundLocationService.addTopLevelCallback(
+                        secondTopLevelCallback);
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('Stop Service'),
+                  onPressed: () async {
+                    await BackgroundLocationService.stopLocationService;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('Get latest location'),
+                  onPressed: () async {
+                   var location = await BackgroundLocationService.getLatestLocation();
+                   setState(() {
+                     _currentLocationText=  "Current location is lat: ${location.lat} lng:${location.lat}";
+                   });
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(_currentLocationText),
+              ),
+            ],
           ),
         ),
       ),

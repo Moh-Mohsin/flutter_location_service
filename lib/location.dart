@@ -1,5 +1,8 @@
 class Location{
   double lat;
   double lng;
-  Location(this.lat,this.lng);
+  double accuracy  ;
+  double bearing  ;
+  double speed  ;
+  Location(this.lat,this.lng,this.accuracy,this.bearing,this.speed);
 }
