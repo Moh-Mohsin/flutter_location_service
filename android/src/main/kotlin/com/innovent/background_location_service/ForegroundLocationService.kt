@@ -138,7 +138,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             args.add(location.speedAccuracyMetersPerSecond)
         }else{
-            args.add(0)
+            args.add(0.0)
         }
 
         mBackgroundChannel.invokeMethod("updateLocation", args)
