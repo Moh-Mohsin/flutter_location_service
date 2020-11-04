@@ -7,6 +7,6 @@ class Location{
   int time;
   double altitude;
   double speedAccuracy;
-
-  Location(this.lat,this.lng,this.accuracy,this.bearing,this.speed,this.time,this.altitude,this.speedAccuracy);
+  String optionalPayload;
+  Location(this.lat,this.lng,this.accuracy,this.bearing,this.speed,this.time,this.altitude,this.speedAccuracy,this.optionalPayload);
 }

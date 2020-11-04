@@ -95,6 +95,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
             PluginUtils.showToast(currentActivity!!.applicationContext,
                     "Unable to get the location, Please make sure that the service is running !");
         }
+
         val args = arrayListOf<Any>()
         args.add(CallbackHolder.location?.latitude ?: 0.0)
         args.add(CallbackHolder.location?.longitude ?: 0.0)
@@ -108,6 +109,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         }else{
             args.add(0)
         }
+        args.add(CallbackHolder.optionalPayload)
         result.success(args)
     }
 
@@ -131,6 +133,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         } else {
             PluginUtils.showToast(currentActivity!!.applicationContext,
                     "Service is not running !")
+            result.success(false)
         }
     }
 
@@ -154,6 +157,9 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         val notificationTitle = args[5] as String
         val notificationContent = args[6] as String
         val enableToasts = args[7] as Boolean
+        val optionalPayload = args[8] as String
+
+        CallbackHolder.optionalPayload = optionalPayload
         CallbackHolder.enableToasts = enableToasts
 
         val intent = Intent(mContext, ForegroundLocationService::class.java)

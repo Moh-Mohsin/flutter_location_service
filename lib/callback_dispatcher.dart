@@ -26,9 +26,10 @@ void callbackDispatcher() {
     var time = args[6] as int;
     var altitude = args[7] as double;
     var speedAccuracy = args[8] as double;
+    var optionalPayload = args[9] as String;
 
     callback(Location(
-        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy));
+        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy,optionalPayload));
     print(
         "background_location_service callbackDispatcher lat:$lat lng:$lng accuracy:$accuracy bearing:$bearing speed:$speed time:$time altitude:$altitude speedAccuracy:$speedAccuracy");
   });

@@ -9,6 +9,8 @@ object CallbackHolder {
     val callbackList = mutableListOf<Long>()
     var isServiceRunning = false
     var location: Location? = null
+
+    var optionalPayload:String=""
     fun addCallback(callback: Long) {
         callbackList.add(callback)
         Log.i(TAG, "Added a new callback with id: $callback")

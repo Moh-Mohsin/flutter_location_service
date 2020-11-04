@@ -11,7 +11,7 @@ class LocationSettings {
       this.priority = LocationSettings.PRIORITY_HIGH_ACCURACY,
       this.enableToastNotifications = true,
       this.notificationTitle = "Supervisor",
-      this.notificationContent = "Service is running.."});
+      this.notificationContent = "Service is running..",this.optionalPayload=""});
 
   int locationIntervalMs;
   int fastestIntervalMs;
@@ -20,7 +20,7 @@ class LocationSettings {
   String notificationTitle;
   String notificationContent;
   bool enableToastNotifications;
-
+  String optionalPayload;
   List<dynamic> getArgs() {
     return <dynamic>[
       priority,
@@ -29,7 +29,8 @@ class LocationSettings {
       minChangeDistanceInMeters,
       notificationTitle,
       notificationContent,
-      enableToastNotifications
+      enableToastNotifications,
+      optionalPayload
     ];
   }
 }

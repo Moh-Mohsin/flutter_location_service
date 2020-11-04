@@ -2,16 +2,16 @@ import 'package:background_location_service/background_location_service.dart';
 import 'package:background_location_service/location.dart';
 import 'package:background_location_service/location_settings.dart';
 import 'package:flutter/material.dart';
-
-void firstTopLevelCallback(Location location) {
+Future<void> firstTopLevelCallback(Location location) async {
   print(
-      "firstTopLevelCallback data is lat: ${location.lat} lng:${location.lat}");
+      "firstTopLevelCallback data is lat: ${location.lat} lng:${location.lat} optionalPayload:${location.optionalPayload}");
 }
 
 void secondTopLevelCallback(Location location) {
   print(
-      "secondTopLevelCallback data is lat: ${location.lat} lng:${location.lat}");
+      "secondTopLevelCallback data is lat: ${location.lat} lng:${location.lat} optionalPayload:${location.optionalPayload}");
 }
+
 
 void main() {
   runApp(MyApp());
@@ -46,7 +46,7 @@ class _MyAppState extends State<MyApp> {
                   child: Text('Start Service'),
                   onPressed: () async {
                     await BackgroundLocationService.startService(
-                        LocationSettings());
+                        LocationSettings(locationIntervalMs: 1000,optionalPayload: "Working"));
                   },
                 ),
               ),
