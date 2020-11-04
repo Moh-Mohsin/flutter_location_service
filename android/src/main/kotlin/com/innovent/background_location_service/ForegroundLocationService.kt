@@ -121,13 +121,13 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         CallbackHolder.location = location
         Log.d(TAG, msg)
         CallbackHolder.callbackList.forEach {
-            invokeCallback(location, it)
+            invokeCallback(location, it.value)
         }
     }
 
-    private fun invokeCallback(location: Location, callbackId: Long) {
+    private fun invokeCallback(location: Location, callbackData: CallBackData) {
         val args = ArrayList<Any>()
-        args.add(callbackId)
+        args.add(callbackData.dartId)
         args.add(location.latitude)
         args.add(location.longitude)
         args.add(location.accuracy)
@@ -141,7 +141,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         }else{
             args.add(0.0)
         }
-        args.add(CallbackHolder.optionalPayload)
+        args.add(callbackData.optionalPayload)
 
         mBackgroundChannel.invokeMethod("updateLocation", args)
     }

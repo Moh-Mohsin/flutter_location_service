@@ -6,17 +6,17 @@ import android.util.Log
 object CallbackHolder {
     var enableToasts: Boolean = false
     val TAG = "CallbackHolder"
-    val callbackList = mutableListOf<Long>()
+
+    val callbackList = mutableMapOf<String, CallBackData>()
     var isServiceRunning = false
     var location: Location? = null
 
-    var optionalPayload:String=""
-    fun addCallback(callback: Long) {
-        callbackList.add(callback)
-        Log.i(TAG, "Added a new callback with id: $callback")
+    fun addCallback(data: CallBackData) {
+        callbackList.put(data.id, data)
+        Log.i(TAG, "Added a new callback with id: $data")
     }
 
-    fun removeCallback(callback: Long) {
+    fun removeCallback(callback: String) {
         callbackList.remove(callback)
         Log.i(TAG, "Removed callback with id: $callback")
     }
@@ -27,3 +27,5 @@ object CallbackHolder {
         isServiceRunning = false
     }
 }
+
+data class CallBackData(val dartId: Long, val id: String, val optionalPayload: String)

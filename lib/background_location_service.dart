@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:background_location_service/location.dart';
+import 'package:background_location_service/callback_data.dart';
 import 'package:background_location_service/location_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,12 +23,20 @@ class BackgroundLocationService {
   }
 
   static Future<bool> addTopLevelCallback(
-      void Function(Location location) callback) async {
+      void Function(CallbackData data) callback, String callbackId,
+      {String optionalPayload = ""}) async {
     final args = <dynamic>[
       PluginUtilities.getCallbackHandle(callback).toRawHandle()
     ];
-
+    args.add(callbackId);
+    args.add(optionalPayload);
     var result = await _channel.invokeMethod('addTopLevelCallback', args);
+    return result;
+  }
+
+  static Future<bool> removeTopLevelCallback(String callbackId) async {
+    final args = <dynamic>[callbackId];
+    var result = await _channel.invokeMethod('removeTopLevelCallback', args);
     return result;
   }
 
@@ -43,7 +51,11 @@ class BackgroundLocationService {
     var time = result[5] as int;
     var altitude = result[6] as double;
     var speedAccuracy = result[7] as double;
-    return Location(lat, lng, accuracy, bearing, speed,time,altitude,speedAccuracy,"optionalPayload");
+
+    Location location = Location(
+        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy);
+
+    return location;
   }
 
   static Future<bool> get stopLocationService async {

@@ -4,7 +4,7 @@
 
 import 'dart:ui';
 
-import 'package:background_location_service/location.dart';
+import 'package:background_location_service/callback_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,9 +27,10 @@ void callbackDispatcher() {
     var altitude = args[7] as double;
     var speedAccuracy = args[8] as double;
     var optionalPayload = args[9] as String;
-
-    callback(Location(
-        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy,optionalPayload));
+    Location location = Location(
+        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy);
+    CallbackData data = CallbackData(location, optionalPayload);
+    callback(data);
     print(
         "background_location_service callbackDispatcher lat:$lat lng:$lng accuracy:$accuracy bearing:$bearing speed:$speed time:$time altitude:$altitude speedAccuracy:$speedAccuracy");
   });

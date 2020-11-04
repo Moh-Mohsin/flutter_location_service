@@ -70,19 +70,25 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         when (call.method) {
             "startLocationService" -> {
                 handleStartServiceMethod(call, result)
-                Log.i(TAG,"Staring the service .")
+                Log.i(TAG, "Staring the service .")
             }
             "stopLocationService" -> {
                 handleStopServiceMethod(call, result)
-                Log.i(TAG,"Stoping the service .")
+                Log.i(TAG, "Stoping the service .")
             }
             "addTopLevelCallback" -> {
                 handleAddTopLevelCallbackMethod(call, result)
-                Log.i(TAG,"adding a callback .")
+                Log.i(TAG, "adding a callback .")
             }
+            "removeTopLevelCallback" -> {
+                handleRemoveTopLevelCallbackMethod(call, result)
+                Log.i(TAG, "removing callback")
+            }
+
+
             "getLocation" -> {
                 handleGetLocationMethod(call, result)
-                Log.i(TAG,"Removing a callback.")
+                Log.i(TAG, "Removing a callback.")
             }
             else -> {
                 result.notImplemented()
@@ -102,21 +108,31 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         args.add(CallbackHolder.location?.accuracy ?: 0.0)
         args.add(CallbackHolder.location?.bearing ?: 0.0)
         args.add(CallbackHolder.location?.speed ?: 0.0)
-        args.add(CallbackHolder.location?.time?: 0)
-        args.add(CallbackHolder.location?.altitude?: 0.0)
+        args.add(CallbackHolder.location?.time ?: 0)
+        args.add(CallbackHolder.location?.altitude ?: 0.0)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond?: 0.0)
-        }else{
+            args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond ?: 0.0)
+        } else {
             args.add(0)
         }
-        args.add(CallbackHolder.optionalPayload)
         result.success(args)
+    }
+
+
+    private fun handleRemoveTopLevelCallbackMethod(call: MethodCall, result: Result) {
+        val args = call.arguments<ArrayList<*>?>()
+        val callbackId = args!![0] as String
+        CallbackHolder.removeCallback(callbackId)
+        result.success(true)
     }
 
     private fun handleAddTopLevelCallbackMethod(call: MethodCall, result: Result) {
         val args = call.arguments<ArrayList<*>?>()
         val callback = args!![0] as Long
-        CallbackHolder.addCallback(callback)
+        val callbackId = args!![1] as String
+        val optionalPayload = args!![2] as String
+        val data = CallBackData(callback, callbackId, optionalPayload)
+        CallbackHolder.addCallback(data)
         if (!CallbackHolder.isServiceRunning) {
             PluginUtils.showToast(currentActivity!!.applicationContext,
                     "The callback is added but you need to start the service to get the location updates !");
@@ -157,9 +173,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         val notificationTitle = args[5] as String
         val notificationContent = args[6] as String
         val enableToasts = args[7] as Boolean
-        val optionalPayload = args[8] as String
 
-        CallbackHolder.optionalPayload = optionalPayload
         CallbackHolder.enableToasts = enableToasts
 
         val intent = Intent(mContext, ForegroundLocationService::class.java)
