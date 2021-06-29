@@ -113,7 +113,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond ?: 0.0)
         } else {
-            args.add(0)
+            args.add(0.0)
         }
         result.success(args)
     }
