@@ -43,19 +43,22 @@ class BackgroundLocationService {
   static Future<Location> getLatestLocation() async {
     WidgetsFlutterBinding.ensureInitialized();
     var result = await _channel.invokeMethod("getLocation");
-    var lat = result[0] as double;
-    var lng = result[1] as double;
-    var accuracy = result[2] as double;
-    var bearing = result[3] as double;
-    var speed = result[4] as double;
-    var time = result[5] as int;
-    var altitude = result[6] as double;
-    var speedAccuracy = result[7] as double;
+    try {
+      var lat = result[0] as double;
+      var lng = result[1] as double;
+      var accuracy = result[2] as double;
+      var bearing = result[3] as double;
+      var speed = result[4] as double;
+      var time = result[5] as int;
+      var altitude = result[6] as double;
+      var speedAccuracy = result[7] as double;
 
-    Location location = Location(
-        lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy);
-
-    return location;
+      Location location = Location(
+          lat, lng, accuracy, bearing, speed, time, altitude, speedAccuracy);
+      return location;
+    } catch (e) {
+      return Location(0.0, 0.0, 0.0, 0.0, 0.0, 0, 0.0, 0.0);
+    }
   }
 
   static Future<bool> get stopLocationService async {
