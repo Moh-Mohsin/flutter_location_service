@@ -48,6 +48,13 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
+
+        fusedLocationClient.lastLocation
+                .addOnSuccessListener { location: Location? ->
+                    location?.also {
+                        updateLocation(location)
+                    }
+                }
         mLocationRequest = LocationRequest.create().apply {
             interval = mInterval.toLong()
             smallestDisplacement = mSmallestDisplacement.toFloat()
@@ -67,12 +74,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(baseContext)
         createNotificationChannel()
 
-        fusedLocationClient.lastLocation
-                .addOnSuccessListener { location: Location? ->
-                    location?.also {
-                        updateLocation(location)
-                    }
-                }
+
 
     }
 
@@ -141,6 +143,8 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         }else{
             args.add(0.0)
         }
+
+
         args.add(callbackData.optionalPayload)
 
         mBackgroundChannel.invokeMethod("updateLocation", args)
