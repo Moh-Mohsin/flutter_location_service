@@ -5,9 +5,9 @@ class LocationSettings {
   static const int PRIORITY_NO_POWER = 105;
 
   LocationSettings(
-      {this.locationIntervalMs = 1000 * 30,
-      this.fastestIntervalMs = 100,
-      this.minChangeDistanceInMeters = 0,
+      {this.locationIntervalMs = 1000,
+      this.fastestIntervalMs = 500,
+      this.minChangeDistanceInMeters = 1,
       this.priority = LocationSettings.PRIORITY_HIGH_ACCURACY,
       this.enableToastNotifications = true,
       this.notificationTitle = "Supervisor",
