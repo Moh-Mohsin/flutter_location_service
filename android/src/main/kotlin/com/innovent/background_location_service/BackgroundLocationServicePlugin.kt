@@ -1,10 +1,7 @@
 package com.innovent.background_location_service
 
 import android.Manifest
-import android.app.Activity
-import android.app.AlarmManager
-import android.app.Application
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,6 +10,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import com.innovent.background_location_service.utils.location.PluginUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -24,7 +22,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.text.SimpleDateFormat
-import kotlin.collections.ArrayList
+
 
 /** BackgroundLocationServicePlugin */
 public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
@@ -233,7 +231,15 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         }
         result.success(true)
     }
-
+    private fun isMyServiceRunning(serviceClass: Class<*>,context: Context): Boolean {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
+        for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
     private fun startForegroundService(args: ArrayList<*>?) {
         val callbackDispatcher = args!![0] as Long
         val priority = args[1] as Int

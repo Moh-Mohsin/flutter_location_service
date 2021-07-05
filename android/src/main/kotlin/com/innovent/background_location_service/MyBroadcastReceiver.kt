@@ -47,7 +47,7 @@ class MyBroadcastReceiver : BroadcastReceiver() {
         serviceIntent.putExtra(ForegroundLocationService.NOTIFICATION_TITLE, intent.getStringExtra(ForegroundLocationService.NOTIFICATION_TITLE))
         serviceIntent.putExtra(ForegroundLocationService.NOTIFICATION_CONTENT, intent.getStringExtra(ForegroundLocationService.NOTIFICATION_CONTENT))
         context.startService(serviceIntent)
-        createNotificationChannel(context,intent)
+      //  createNotificationChannel(context,intent)
     }
 
     private fun buildNotification(context: Context,intent: Intent): Notification? {
