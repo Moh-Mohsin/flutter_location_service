@@ -38,9 +38,9 @@ class BackgroundLocationService {
   static Future<bool> setAlarm(
       {int alarmId,
       LocationSettings settings,
-      DateTime time,
-      String notificationTitle = "Alarm",
-      String notificationContent = "You have an alarm"}) async {
+      DateTime time,int repeatEveryMs= 5*60*1000,
+      String notificationTitle = "Upcoming Trip",
+      String notificationContent = "You have an an upcoming trip after 15 mins."}) async {
     final args = <dynamic>[alarmId];
     args.addAll(settings.getArgs());
 
@@ -49,6 +49,7 @@ class BackgroundLocationService {
         PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle());
     args.add(notificationTitle);
     args.add(notificationContent);
+    args.add(repeatEveryMs);
     var result = await _channel.invokeMethod('setAlarm', args);
     return result;
   }

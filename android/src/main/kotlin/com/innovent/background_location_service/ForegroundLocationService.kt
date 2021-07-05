@@ -33,7 +33,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
     private var mFastestInterval: Int = 0
     private var mPriority: Int = 0
 
-      val CHANNEL_ID = "ForegroundServiceChannel"
+    val CHANNEL_ID = "ForegroundServiceChannel"
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
@@ -75,7 +75,6 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         createNotificationChannel()
 
 
-
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -85,7 +84,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         initVariables(intent)
         //do heavy work on a background thread
         //stopSelf();
-        startLocationService(this, callbackDispatcherId)
+        startLocationService(this)
 
         return START_NOT_STICKY
     }
@@ -141,52 +140,61 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             args.add(location.speedAccuracyMetersPerSecond)
-        }else{
+        } else {
             args.add(0.0)
         }
 
 
         args.add(callbackData.optionalPayload)
+        try {
+            mBackgroundChannel.invokeMethod("updateLocation", args)
+        } catch (e: Exception) {
 
-        mBackgroundChannel.invokeMethod("updateLocation", args)
+        }
+
     }
 
-
-    private fun startLocationService(context: Context, callbackHandle: Long) {
+    private fun startLocationService(context: Context) {
         mContext = context
+
+
         CallbackHolder.isServiceRunning = true
 
         if (!PluginUtils.isLocationEnabled(context)) {
             PluginUtils.launchLocationSettings(context)
             PluginUtils.showToast(context, "Please turn ON your GPS.")
         }
+        try {
+            if (sBackgroundFlutterEngine == null) {
+                if (callbackDispatcherId == 0L || callbackDispatcherId == null) {
+                    Log.e(TAG, "Fatal: no callback registered")
+                    return
+                }
 
-        if (sBackgroundFlutterEngine == null) {
-            if (callbackHandle == 0L) {
-                Log.e(TAG, "Fatal: no callback registered")
-                return
+                val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackDispatcherId)
+                if (callbackInfo == null) {
+                    Log.e(TAG, "Fatal: failed to find callback")
+                    return
+                }
+                Log.i(TAG, "Starting Service...")
+                sBackgroundFlutterEngine = FlutterEngine(context)
+
+                val args = DartExecutor.DartCallback(
+                        context.getAssets(),
+                        FlutterMain.findAppBundlePath(context)!!,
+                        callbackInfo
+                )
+                sBackgroundFlutterEngine!!.getDartExecutor().executeDartCallback(args)
+
             }
 
-            val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-            if (callbackInfo == null) {
-                Log.e(TAG, "Fatal: failed to find callback")
-                return
-            }
-            Log.i(TAG, "Starting Service...")
-            sBackgroundFlutterEngine = FlutterEngine(context)
-
-            val args = DartExecutor.DartCallback(
-                    context.getAssets(),
-                    FlutterMain.findAppBundlePath(context)!!,
-                    callbackInfo
-            )
-            sBackgroundFlutterEngine!!.getDartExecutor().executeDartCallback(args)
-
+            mBackgroundChannel = MethodChannel(sBackgroundFlutterEngine!!.getDartExecutor().getBinaryMessenger(),
+                    "com.innovent/background_channel")
+            mBackgroundChannel.setMethodCallHandler(this)
+        } catch (e: Exception) {
+            Log.e(TAG, "Fatal: failed to init flutter background")
         }
 
-        mBackgroundChannel = MethodChannel(sBackgroundFlutterEngine!!.getDartExecutor().getBinaryMessenger(),
-                "com.innovent/background_channel")
-        mBackgroundChannel.setMethodCallHandler(this)
         startLocationUpdates()
     }
 

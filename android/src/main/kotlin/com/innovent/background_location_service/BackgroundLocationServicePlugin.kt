@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -25,9 +24,6 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.collections.ArrayList
 
 /** BackgroundLocationServicePlugin */
@@ -136,6 +132,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         val callbackDispatcher = args!![9] as Long
         val broadCastNotificationTitle = args[10] as String
         val broadCastNotificationContent = args[11] as String
+        val repeatEveryMs = args[12] as Int
         CallbackHolder.enableToasts = enableToasts
 
         val intent = Intent(mContext, MyBroadcastReceiver::class.java)
@@ -148,32 +145,25 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         intent.putExtra(ForegroundLocationService.NOTIFICATION_CONTENT, notificationContent)
         intent.putExtra(MyBroadcastReceiver.NOTIFICATION_TITLE, broadCastNotificationTitle)
         intent.putExtra(MyBroadcastReceiver.NOTIFICATION_CONTENT, broadCastNotificationContent)
-        startAlertAtParticularTime(alarmId,intent,dateTime)
+        startAlertAtParticularTime(alarmId,intent,dateTime,repeatEveryMs)
         result.success(true)
     }
 
 
     fun getPendingIntent(id: Int, intent: Intent):PendingIntent{
-      //  val  intent = Intent(this.mContext, MyBroadcastReceiver::class.java)
-        val  pendingIntent = PendingIntent.getBroadcast(
-                this.mContext, id, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-        return pendingIntent;
+        return PendingIntent.getBroadcast(
+                mContext, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
-    fun startAlertAtParticularTime(id: Int, intent: Intent, dateTime: String) {
+    fun startAlertAtParticularTime(id: Int, intent: Intent, dateTime: String, repeatEveryMs: Int) {
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateTime)
         println("date.time")
         println(date.time)
-        // alarm first vibrate at 14 hrs and 40 min and repeat itself at ONE_HOUR interval
-
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.timeInMillis = System.currentTimeMillis()
-        //calendar.set(Calendar.HOUR_OF_DAY, 14)
-        calendar.set(Calendar.SECOND, 15)
+       // AlarmManager.INTERVAL_DAY
        val alarmManager = this.mContext?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         alarmManager?.setInexactRepeating(AlarmManager.RTC_WAKEUP, date.time,
-                1*60*1000, getPendingIntent(id,intent))
-        Toast.makeText(this.mContext, "Alarm will vibrate at time specified",
-                Toast.LENGTH_SHORT).show()
+                repeatEveryMs.toLong(), getPendingIntent(id,intent))
+       /* Toast.makeText(this.mContext, "Alarm will vibrate at time specified",
+                Toast.LENGTH_SHORT).show()*/
     }
 
     private fun handleGetLocationMethod(call: MethodCall, result: Result) {

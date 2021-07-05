@@ -24,8 +24,8 @@ class MyBroadcastReceiver : BroadcastReceiver() {
 
     val CHANNEL_ID = "ForegroundServiceChannel"
     override fun onReceive(context: Context, intent: Intent) {
-        Toast.makeText(context, "Time Up... Now Vibrating !!!",
-                Toast.LENGTH_LONG).show()
+     /*   Toast.makeText(context, "Time Up... Now Vibrating !!!",
+                Toast.LENGTH_LONG).show()*/
 
         startForegroundService(context,intent)
      /*   val vibrator = context

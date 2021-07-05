@@ -10,10 +10,8 @@ Future<void> firstTopLevelCallback(CallbackData data) async {
 
 void secondTopLevelCallback(CallbackData data) {
   print(
-      "secondTopLevelCallback data is lat: ${data.location.lat} lng:${data
-          .location.lat} optionalPayload:${data.optionalPayload}");
+      "secondTopLevelCallback data is lat: ${data.location.lat} lng:${data.location.lat} optionalPayload:${data.optionalPayload}");
 }
-
 
 void main() {
   runApp(MyApp());
@@ -25,7 +23,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _currentLocationText="No location";
+  String _currentLocationText = "No location";
   @override
   void initState() {
     super.initState();
@@ -47,13 +45,16 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Start Service'),
                   onPressed: () async {
-                 /*    await BackgroundLocationService.startService(
+                    /*    await BackgroundLocationService.startService(
                         LocationSettings(locationIntervalMs: 1000)); */
 
-                        var date=DateTime.now().add(Duration(seconds: 1));
-                        print(date.toString());
-                          await BackgroundLocationService.setAlarm(alarmId:11,
-                        settings:LocationSettings(locationIntervalMs: 1000),time: date);
+                    var date = DateTime.now().add(Duration(minutes: 10));
+                    print(date.toString());
+                    await BackgroundLocationService.setAlarm(
+                        alarmId: 11,
+                        repeatEveryMs: 5 * 60 * 1000,
+                        settings: LocationSettings(locationIntervalMs: 1000),
+                        time: date);
                   },
                 ),
               ),
@@ -76,13 +77,11 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Remove Callbacks'),
                   onPressed: () async {
-                    
                     await BackgroundLocationService.removeTopLevelCallback(
                         "id_1");
                   },
                 ),
               ),
-
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: RaisedButton(
@@ -98,10 +97,12 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Get latest location'),
                   onPressed: () async {
-                   var location = await BackgroundLocationService.getLatestLocation();
-                   setState(() {
-                     _currentLocationText=  "Current location is lat: ${location.lat} lng:${location.lat}";
-                   });
+                    var location =
+                        await BackgroundLocationService.getLatestLocation();
+                    setState(() {
+                      _currentLocationText =
+                          "Current location is lat: ${location.lat} lng:${location.lat}";
+                    });
                   },
                 ),
               ),
