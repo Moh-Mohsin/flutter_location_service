@@ -5,6 +5,7 @@ import 'package:background_location_service/callback_data.dart';
 import 'package:background_location_service/location_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import 'callback_dispatcher.dart';
 
@@ -31,6 +32,30 @@ class BackgroundLocationService {
     args.add(callbackId);
     args.add(optionalPayload);
     var result = await _channel.invokeMethod('addTopLevelCallback', args);
+    return result;
+  }
+
+  static Future<bool> setAlarm(
+      {int alarmId,
+      LocationSettings settings,
+      DateTime time,
+      String notificationTitle = "Alarm",
+      String notificationContent = "You have an alarm"}) async {
+    final args = <dynamic>[alarmId];
+    args.addAll(settings.getArgs());
+
+    args.add(DateFormat('yyyy-MM-dd HH:mm:ss').format(time));
+    args.add(
+        PluginUtilities.getCallbackHandle(callbackDispatcher).toRawHandle());
+    args.add(notificationTitle);
+    args.add(notificationContent);
+    var result = await _channel.invokeMethod('setAlarm', args);
+    return result;
+  }
+
+  static Future<bool> removeAlarm({int alarmId}) async {
+    final args = <dynamic>[alarmId];
+    var result = await _channel.invokeMethod('removeAlarm', args);
     return result;
   }
 

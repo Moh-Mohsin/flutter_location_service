@@ -33,7 +33,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
     private var mFastestInterval: Int = 0
     private var mPriority: Int = 0
 
-    val CHANNEL_ID = "ForegroundServiceChannel"
+      val CHANNEL_ID = "ForegroundServiceChannel"
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
@@ -94,9 +94,9 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
 
         callbackDispatcherId = intent.getLongExtra(CALLBACK_DISPATCHER, 0)
         mPriority = intent.getIntExtra(PRIORITY, LocationRequest.PRIORITY_HIGH_ACCURACY)
-        mFastestInterval = intent.getIntExtra(FASTEST_INTERVAL_IN_MS, 0)
-        mInterval = intent.getIntExtra(LOCATION_INTERVAL_IN_MS, 0)
-        mSmallestDisplacement = intent.getIntExtra(MIN_CHANGE_DISTANCE_IN_METER, 0)
+        mFastestInterval = intent.getIntExtra(FASTEST_INTERVAL_IN_MS, 1000)
+        mInterval = intent.getIntExtra(LOCATION_INTERVAL_IN_MS, 1000)
+        mSmallestDisplacement = intent.getIntExtra(MIN_CHANGE_DISTANCE_IN_METER, 5)
         // callbackId = intent.getLongExtra("callback", 0)
     }
 
@@ -122,6 +122,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         mLocation = location
         CallbackHolder.location = location
         Log.d(TAG, msg)
+        println(msg)
         CallbackHolder.callbackList.forEach {
             invokeCallback(location, it.value)
         }

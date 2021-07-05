@@ -47,8 +47,13 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Start Service'),
                   onPressed: () async {
-                    await BackgroundLocationService.startService(
-                        LocationSettings(locationIntervalMs: 1000));
+                 /*    await BackgroundLocationService.startService(
+                        LocationSettings(locationIntervalMs: 1000)); */
+
+                        var date=DateTime.now().add(Duration(seconds: 1));
+                        print(date.toString());
+                          await BackgroundLocationService.setAlarm(alarmId:11,
+                        settings:LocationSettings(locationIntervalMs: 1000),time: date);
                   },
                 ),
               ),
@@ -71,6 +76,7 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Remove Callbacks'),
                   onPressed: () async {
+                    
                     await BackgroundLocationService.removeTopLevelCallback(
                         "id_1");
                   },
@@ -82,6 +88,7 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Stop Service'),
                   onPressed: () async {
+                    //await BackgroundLocationService.removeAlarm(alarmId:11,);
                     await BackgroundLocationService.stopLocationService;
                   },
                 ),
