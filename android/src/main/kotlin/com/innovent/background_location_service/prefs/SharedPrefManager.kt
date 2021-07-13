@@ -19,7 +19,6 @@ class SharedPrefManager(private val preferences: SharedPreferences) {
     }
 
     fun storeAlarmDataHolder(alarmholder: AlarmDataHolder): Single<String> {
-        print("Storing :"+alarmholder.toString())
         return Single.fromCallable<String> {
             preferences.edit().putString(SCHEDULES_FIELD, alarmholder.toString()).apply()
             return@fromCallable ""
