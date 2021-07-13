@@ -34,7 +34,7 @@ class SharedPrefManager(private val preferences: SharedPreferences) {
 
     fun storeAlarm(alarm: AlarmData)  {
         getAlarms().subscribe { it->
-            println("Current alarms: "+it.toString())
+
             var newList:MutableList<AlarmData> = mutableListOf()
 
             it.list.forEach { e->
@@ -43,11 +43,7 @@ class SharedPrefManager(private val preferences: SharedPreferences) {
                }
             }
             newList.add(alarm)
-            println("Storing alarm : "+alarm.toString())
-            storeAlarmDataHolder(AlarmDataHolder(newList)).subscribe{
-                it->
-                println("Storing worked: "+it.toString())
-            }
+            storeAlarmDataHolder(AlarmDataHolder(newList)).subscribe()
 
         }
 
@@ -73,14 +69,12 @@ class SharedPrefManager(private val preferences: SharedPreferences) {
     fun getAlarms(): Single<AlarmDataHolder> {
         return Single.fromCallable<AlarmDataHolder> {
             var data=preferences.getString(SCHEDULES_FIELD, "");
-            println("Stored data//"+data)
             return@fromCallable Gson().fromJson(
                     data ,
                     AlarmDataHolder::class.java
             )
         }
             .subscribeOn(Schedulers.io()).onErrorReturn { it->
-                    println("Errorn: "+it.toString())
                     AlarmDataHolder(mutableListOf()) }
 
     }

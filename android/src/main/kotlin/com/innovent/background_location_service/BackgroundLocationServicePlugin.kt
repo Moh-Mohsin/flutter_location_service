@@ -159,7 +159,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
 
     fun getPendingIntent(id: Int, intent: Intent):PendingIntent{
         return PendingIntent.getBroadcast(
-                mContext, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                mContext, id, intent, PendingIntent.FLAG_CANCEL_CURRENT)
     }
 
 
