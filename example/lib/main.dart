@@ -87,7 +87,7 @@ class _MyAppState extends State<MyApp> {
                 child: RaisedButton(
                   child: Text('Stop Service'),
                   onPressed: () async {
-                    //await BackgroundLocationService.removeAlarm(alarmId:11,);
+                    await BackgroundLocationService.removeAlarm(alarmId:11,);
                     await BackgroundLocationService.stopLocationService;
                   },
                 ),
