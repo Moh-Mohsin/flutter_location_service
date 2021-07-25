@@ -231,7 +231,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
 
     private fun handleStartServiceMethod(call: MethodCall, result: Result) {
         mArgs = call.arguments()!!
-        checkLocationPermission(currentActivity!!.application)
+        checkLocationPermission(currentActivity!!.application) 
         if (isLocationPermissionGranted && !CallbackHolder.isServiceRunning) startForegroundService(mArgs)
         else if (CallbackHolder.isServiceRunning) {
             PluginUtils.showToast(currentActivity!!.applicationContext,

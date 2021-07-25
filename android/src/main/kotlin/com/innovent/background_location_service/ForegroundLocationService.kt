@@ -158,6 +158,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         mContext = context
 
 
+
         CallbackHolder.isServiceRunning = true
 
         if (!PluginUtils.isLocationEnabled(context)) {
@@ -233,6 +234,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         const val MIN_CHANGE_DISTANCE_IN_METER = "minChangeDistanceInMeters"
         const val NOTIFICATION_TITLE = "notificationTitle"
         const val NOTIFICATION_CONTENT = "notificationContent"
+
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {

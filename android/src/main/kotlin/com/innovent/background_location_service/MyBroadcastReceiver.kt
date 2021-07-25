@@ -27,7 +27,9 @@ class MyBroadcastReceiver : BroadcastReceiver() {
      /*   Toast.makeText(context, "Time Up... Now Vibrating !!!",
                 Toast.LENGTH_LONG).show()*/
 
-        startForegroundService(context,intent)
+      if(!CallbackHolder.isServiceRunning)  {
+          startForegroundService(context,intent)}
+
      /*   val vibrator = context
                 .getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         vibrator.vibrate(2000)*/
