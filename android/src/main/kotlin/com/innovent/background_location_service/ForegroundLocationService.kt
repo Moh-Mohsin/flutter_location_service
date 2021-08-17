@@ -73,8 +73,6 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(baseContext)
         createNotificationChannel()
-
-
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {

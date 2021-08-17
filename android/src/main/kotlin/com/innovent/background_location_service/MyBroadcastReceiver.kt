@@ -26,9 +26,13 @@ class MyBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
      /*   Toast.makeText(context, "Time Up... Now Vibrating !!!",
                 Toast.LENGTH_LONG).show()*/
+    try {
+    if(!CallbackHolder.isServiceRunning)  {
+        startForegroundService(context,intent)}
+      }catch (e:Exception){
 
-      if(!CallbackHolder.isServiceRunning)  {
-          startForegroundService(context,intent)}
+       }
+
 
      /*   val vibrator = context
                 .getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -48,8 +52,13 @@ class MyBroadcastReceiver : BroadcastReceiver() {
         serviceIntent.putExtra(ForegroundLocationService.MIN_CHANGE_DISTANCE_IN_METER, intent.getIntExtra(ForegroundLocationService.MIN_CHANGE_DISTANCE_IN_METER,0))
         serviceIntent.putExtra(ForegroundLocationService.NOTIFICATION_TITLE, intent.getStringExtra(ForegroundLocationService.NOTIFICATION_TITLE))
         serviceIntent.putExtra(ForegroundLocationService.NOTIFICATION_CONTENT, intent.getStringExtra(ForegroundLocationService.NOTIFICATION_CONTENT))
-        context.startService(serviceIntent)
-      //  createNotificationChannel(context,intent)
+        createNotificationChannel(context,intent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        }else {
+            context.startService(serviceIntent)
+        }
+        //  createNotificationChannel(context,intent)
     }
 
     private fun buildNotification(context: Context,intent: Intent): Notification? {
@@ -89,9 +98,9 @@ class MyBroadcastReceiver : BroadcastReceiver() {
         }
 
 
-        with(NotificationManagerCompat.from(context)) {
+       /* with(NotificationManagerCompat.from(context)) {
 
             notify(2312312, buildNotification(context,intent)!!)
-        }
+        }*/
     }
 }

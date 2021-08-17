@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
                     /*    await BackgroundLocationService.startService(
                         LocationSettings(locationIntervalMs: 1000)); */
 
-                    var date = DateTime.now().add(Duration(minutes: 10));
+                    var date = DateTime.now().add(Duration(minutes: 1));
                     print(date.toString());
                     await BackgroundLocationService.setAlarm(
                         alarmId: 11,
