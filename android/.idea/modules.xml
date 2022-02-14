@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/background_location_service.iml" filepath="$PROJECT_DIR$/.idea/modules/background_location_service.iml" group="background_location_service" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/background_location_service.iml" filepath="$PROJECT_DIR$/.idea/modules/background_location_service.iml" />
     </modules>
   </component>
 </project>
