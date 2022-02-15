@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
@@ -23,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import timber.log.Timber
 import java.text.SimpleDateFormat
 
 
@@ -38,7 +41,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
     private val locationPermissionCode = 72
     private var isLocationPermissionGranted: Boolean = false
     private var currentActivity: Activity? = null
-    private lateinit var mArgs: ArrayList<*>
+    private var mArgs: ArrayList<*>? = null
 
     constructor(context: Context) : this() {
         mContext = context
@@ -48,6 +51,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         if (mContext == null) mContext = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "com.innovent/background_location_service")
         channel.setMethodCallHandler(this)
+        Timber.plant(Timber.DebugTree())
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -74,34 +78,32 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         when (call.method) {
             "startLocationService" -> {
                 handleStartServiceMethod(call, result)
-                Log.i(TAG, "Staring the service .")
+                Timber.i("Staring the service")
             }
             "stopLocationService" -> {
                 handleStopServiceMethod(call, result)
-                Log.i(TAG, "Stoping the service .")
+                Timber.i("Stopping the service")
             }
             "addTopLevelCallback" -> {
                 handleAddTopLevelCallbackMethod(call, result)
-                Log.i(TAG, "adding a callback .")
+                Timber.i("adding a callback")
             }
             "removeTopLevelCallback" -> {
                 handleRemoveTopLevelCallbackMethod(call, result)
-                Log.i(TAG, "removing callback")
+                Timber.i("removing callback")
             }
-
-
             "getLocation" -> {
                 handleGetLocationMethod(call, result)
-                Log.i(TAG, "Removing a callback.")
+                Timber.i("Removing a callback")
             }
             "setAlarm" -> {
                 handleSetAlarm(call, result)
-                Log.i(TAG, "setting a new Alarm .")
+                Timber.i("setting a new Alarm")
             }
             "removeAlarm" -> {
-            handleRemoveAlarm(call, result)
-            Log.i(TAG, "Removing alarm")
-        }
+                handleRemoveAlarm(call, result)
+                Timber.i("Removing alarm")
+            }
             else -> {
                 result.notImplemented()
             }
@@ -114,7 +116,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         val intent = Intent(mContext, MyBroadcastReceiver::class.java)
         val alarmManager = this.mContext?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         alarmManager?.cancel(getPendingIntent(alarmId,intent) )
-        var sharedprefs= mContext!! .getSharedPreferences(SharedPrefManager.PREF_NAME, SharedPrefManager.PRIVATE_MODE)
+        var sharedprefs= mContext!! .getSharedPreferences(SharedPrefManager.PREF_NAME, Context.MODE_PRIVATE)
         SharedPrefManager(sharedprefs).removeAlarmByID(alarmId)
         println("Alarm Canceled")
         result.success(true)
@@ -152,7 +154,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
 
         var alarmData= AlarmData(alarmId,priority,fastestIntervalMs,locationIntervalMs,minChangeDistanceInMeters,notificationTitle,notificationContent,enableToasts,dateTime,callbackDispatcher,broadCastNotificationTitle,broadCastNotificationContent,repeatEveryMs)
         print(alarmData.toString())
-        var sharedprefs= mContext!! .getSharedPreferences(SharedPrefManager.PREF_NAME, SharedPrefManager.PRIVATE_MODE)
+        var sharedprefs= mContext!! .getSharedPreferences(SharedPrefManager.PREF_NAME, Context.MODE_PRIVATE)
         SharedPrefManager(sharedprefs).storeAlarm(alarmData)
     }
 
@@ -172,26 +174,40 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
                 repeatEveryMs.toLong(), getPendingIntent(id,intent))
     }
 
+
     private fun handleGetLocationMethod(call: MethodCall, result: Result) {
-        if (!CallbackHolder.isServiceRunning) {
+        var responseDelayMs = 0L
+        if (!CallbackHolder.isServiceRunning && mArgs != null) {
+            Timber.d("getLocation: service is not running, killed? attempting restarting service")
             PluginUtils.showToast(currentActivity!!.applicationContext,
                     "Unable to get the location, Please make sure that the service is running !");
+            startLocationService()
+            responseDelayMs = 2000L
         }
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (responseDelayMs != 0L) {
+                if (!CallbackHolder.isServiceRunning) {
+                    Timber.d("location service still Not active after $responseDelayMs ms")
+                } else {
+                    Timber.d("location service STARTED successfully, current location: ${CallbackHolder.location.toString()}")
+                }
+            }
+            val args = arrayListOf<Any>()
+            args.add(CallbackHolder.location?.latitude ?: 0.0)
+            args.add(CallbackHolder.location?.longitude ?: 0.0)
+            args.add(CallbackHolder.location?.accuracy ?: 0.0)
+            args.add(CallbackHolder.location?.bearing ?: 0.0)
+            args.add(CallbackHolder.location?.speed ?: 0.0)
+            args.add(CallbackHolder.location?.time ?: 0)
+            args.add(CallbackHolder.location?.altitude ?: 0.0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond ?: 0.0)
+            } else {
+                args.add(0.0)
+            }
+            result.success(args)
+        }, responseDelayMs)
 
-        val args = arrayListOf<Any>()
-        args.add(CallbackHolder.location?.latitude ?: 0.0)
-        args.add(CallbackHolder.location?.longitude ?: 0.0)
-        args.add(CallbackHolder.location?.accuracy ?: 0.0)
-        args.add(CallbackHolder.location?.bearing ?: 0.0)
-        args.add(CallbackHolder.location?.speed ?: 0.0)
-        args.add(CallbackHolder.location?.time ?: 0)
-        args.add(CallbackHolder.location?.altitude ?: 0.0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            args.add(CallbackHolder.location?.speedAccuracyMetersPerSecond ?: 0.0)
-        } else {
-            args.add(0.0)
-        }
-        result.success(args)
     }
 
 
@@ -217,6 +233,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
     }
 
     private fun handleStopServiceMethod(call: MethodCall, result: Result) {
+        mArgs = null
         if (CallbackHolder.isServiceRunning) {
             mContext?.stopService(Intent(mContext, ForegroundLocationService::class.java))
             result.success(true)
@@ -231,14 +248,27 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
 
     private fun handleStartServiceMethod(call: MethodCall, result: Result) {
         mArgs = call.arguments()!!
-        checkLocationPermission(currentActivity!!.application)
-        if (isLocationPermissionGranted && !CallbackHolder.isServiceRunning) startForegroundService(mArgs)
-        else if (CallbackHolder.isServiceRunning) {
-            PluginUtils.showToast(currentActivity!!.applicationContext,
-                    "Service is already running !")
-        }
+        startLocationService()
         result.success(true)
     }
+
+    private fun startLocationService() {
+        if(mArgs == null){
+            Timber.d("aborting starting location service, mArgs = null")
+            return
+        }
+        checkLocationPermission(currentActivity!!.application)
+        if (isLocationPermissionGranted && !CallbackHolder.isServiceRunning) startForegroundService(
+            mArgs
+        )
+        else if (CallbackHolder.isServiceRunning) {
+            PluginUtils.showToast(
+                currentActivity!!.applicationContext,
+                "Service is already running !"
+            )
+        }
+    }
+
     private fun isMyServiceRunning(serviceClass: Class<*>,context: Context): Boolean {
         val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
         for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
@@ -269,6 +299,7 @@ public class BackgroundLocationServicePlugin constructor() : FlutterPlugin,
         intent.putExtra(ForegroundLocationService.NOTIFICATION_TITLE, notificationTitle)
         intent.putExtra(ForegroundLocationService.NOTIFICATION_CONTENT, notificationContent)
         //  intent.putExtra("callback", callback)
+        Timber.d("sending location service intent")
         mContext?.startService(intent)
     }
 

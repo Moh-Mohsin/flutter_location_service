@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat
 
 class BootBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        var sharedprefs= context!! .getSharedPreferences(SharedPrefManager.PREF_NAME, SharedPrefManager.PRIVATE_MODE)
+        var sharedprefs= context!!.getSharedPreferences(SharedPrefManager.PREF_NAME, Context.MODE_PRIVATE)
         SharedPrefManager(sharedprefs).getAlarms().observeOn(AndroidSchedulers.mainThread()).subscribe { it->
 
             it.list.forEach { item->

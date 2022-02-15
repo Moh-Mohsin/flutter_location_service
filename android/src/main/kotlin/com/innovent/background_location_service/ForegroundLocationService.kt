@@ -8,16 +8,20 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.innovent.background_location_service.utils.location.PluginUtils
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.FlutterCallbackInformation
 import io.flutter.view.FlutterMain
+import io.flutter.view.FlutterMain.findAppBundlePath
+import timber.log.Timber
 import java.util.*
 
 
@@ -36,15 +40,14 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
     val CHANNEL_ID = "ForegroundServiceChannel"
 
     private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult?) {
-            locationResult ?: return
+        override fun onLocationResult(locationResult: LocationResult) {
             for (location in locationResult.locations) {
                 updateLocation(location)
             }
         }
     }
 
-    var mLocationRequest: LocationRequest? = null
+    lateinit var locationRequest: LocationRequest
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
@@ -55,15 +58,15 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
                         updateLocation(location)
                     }
                 }
-        mLocationRequest = LocationRequest.create().apply {
+        locationRequest = LocationRequest.create().apply {
             interval = mInterval.toLong()
             smallestDisplacement = mSmallestDisplacement.toFloat()
             fastestInterval = mFastestInterval.toLong()
             priority = mPriority
         }
-        fusedLocationClient.requestLocationUpdates(mLocationRequest,
+        fusedLocationClient.requestLocationUpdates(locationRequest,
                 locationCallback,
-                null
+                Looper.getMainLooper()
         )
 
     }
@@ -118,8 +121,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         val msg = "location is ${location.latitude} ${location.longitude}"
         mLocation = location
         CallbackHolder.location = location
-        Log.d(TAG, msg)
-        println(msg)
+        Timber.d(msg)
         CallbackHolder.callbackList.forEach {
             invokeCallback(location, it.value)
         }
@@ -166,32 +168,33 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         try {
             if (sBackgroundFlutterEngine == null) {
                 if (callbackDispatcherId == 0L || callbackDispatcherId == null) {
-                    Log.e(TAG, "Fatal: no callback registered")
+                    Timber.e("Fatal: no callback registered")
                     return
                 }
 
-                val callbackInfo = FlutterCallbackInformation.lookupCallbackInformation(callbackDispatcherId)
+                val callbackInfo =
+                    FlutterCallbackInformation.lookupCallbackInformation(callbackDispatcherId)
                 if (callbackInfo == null) {
-                    Log.e(TAG, "Fatal: failed to find callback")
+                    Timber.e("Fatal: failed to find callback")
                     return
                 }
-                Log.i(TAG, "Starting Service...")
+                Timber.i("Starting Service...")
                 sBackgroundFlutterEngine = FlutterEngine(context)
 
                 val args = DartExecutor.DartCallback(
-                        context.getAssets(),
-                        FlutterMain.findAppBundlePath(context)!!,
-                        callbackInfo
+                    context.assets,
+                    FlutterLoader().findAppBundlePath(),
+                    callbackInfo
                 )
-                sBackgroundFlutterEngine!!.getDartExecutor().executeDartCallback(args)
+                sBackgroundFlutterEngine!!.dartExecutor.executeDartCallback(args)
 
             }
 
-            mBackgroundChannel = MethodChannel(sBackgroundFlutterEngine!!.getDartExecutor().getBinaryMessenger(),
+            mBackgroundChannel = MethodChannel(sBackgroundFlutterEngine!!.dartExecutor.binaryMessenger,
                     "com.innovent/background_channel")
             mBackgroundChannel.setMethodCallHandler(this)
         } catch (e: Exception) {
-            Log.e(TAG, "Fatal: failed to init flutter background")
+            Timber.e(t = e, message = "Fatal: failed to init flutter background")
         }
 
         startLocationUpdates()
@@ -213,6 +216,7 @@ class ForegroundLocationService : Service(), MethodChannel.MethodCallHandler {
         CallbackHolder.isServiceRunning = false
         CallbackHolder.dispose()
         fusedLocationClient.removeLocationUpdates(locationCallback)
+        Timber.d("Location Service is destroyed")
         super.onDestroy()
     }
 

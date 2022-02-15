@@ -9,7 +9,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import timber.log.Timber
 
 
 class MyBroadcastReceiver : BroadcastReceiver() {
@@ -25,7 +27,10 @@ class MyBroadcastReceiver : BroadcastReceiver() {
                    Toast.LENGTH_LONG).show()*/
         try {
             if (!CallbackHolder.isServiceRunning) {
+                Timber.d("BR starting location service...")
                 startForegroundService(context, intent)
+            } else {
+                Timber.d("BR location service already running, aborting")
             }
         } catch (e: Exception) {
 

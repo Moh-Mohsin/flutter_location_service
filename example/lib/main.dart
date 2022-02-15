@@ -42,25 +42,25 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text('Start Service'),
                   onPressed: () async {
-                    /*    await BackgroundLocationService.startService(
-                        LocationSettings(locationIntervalMs: 1000)); */
+                    await BackgroundLocationService.startService(
+                        LocationSettings(locationIntervalMs: 1000));
 
-                    var date = DateTime.now().add(Duration(minutes: 1));
-                    print(date.toString());
-                    await BackgroundLocationService.setAlarm(
-                        alarmId: 11,
-                        repeatEveryMs: 5 * 60 * 1000,
-                        settings: LocationSettings(locationIntervalMs: 1000),
-                        time: date);
+                    // var date = DateTime.now().add(Duration(minutes: 1));
+                    // print(date.toString());
+                    // await BackgroundLocationService.setAlarm(
+                    //     alarmId: 11,
+                    //     repeatEveryMs: 5 * 60 * 1000,
+                    //     settings: LocationSettings(locationIntervalMs: 1000),
+                    //     time: date);
                   },
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text('Register Callbacks'),
                   onPressed: () async {
                     await BackgroundLocationService.addTopLevelCallback(
@@ -74,7 +74,7 @@ class _MyAppState extends State<MyApp> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text('Remove Callbacks'),
                   onPressed: () async {
                     await BackgroundLocationService.removeTopLevelCallback(
@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text('Stop Service'),
                   onPressed: () async {
                     await BackgroundLocationService.removeAlarm(alarmId:11,);
@@ -94,7 +94,7 @@ class _MyAppState extends State<MyApp> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
+                child: ElevatedButton(
                   child: Text('Get latest location'),
                   onPressed: () async {
                     var location =
